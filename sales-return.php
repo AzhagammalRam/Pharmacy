@@ -215,7 +215,7 @@ if (isset($bill_no) && $bill_no != '""') {
 }
 ?>
 <br/>
-</div>
+</div> 
                 <div style="min-height: 350px; max-height: 450px; overflow-y: auto;">
                 <br/>
                   <table id="tbl-list" class="table table-striped record_table">
