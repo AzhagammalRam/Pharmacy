@@ -25,7 +25,7 @@
     <div class="row">
       <div class="col-sm-10 col-sm-offset-1">
         <div class="login-container">
-          <div class="center">
+          <div class="center" style="background: #000000c9;padding: 3%;border-radius: 50%;">
             <h1> <img src="images/logo.png" style="height: 175px; width: 150px;" /></h1>
           </div>
           <div class="space-6"></div>

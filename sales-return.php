@@ -13,35 +13,15 @@
   }
   
   require_once("config.php");
-  $bill_no = '""';
+
   if (isset($_REQUEST['billno'])) {
-      $opt = $_REQUEST['billno'];
-      mysqli_query($db, "UPDATE tbl_billing SET status = 8 WHERE (billno = '$opt' OR phno = '$opt' OR patientname = '$opt') AND status = 1 AND del_status != 1");
-      
-      $result = mysqli_query($db, "SELECT GROUP_CONCAT(billno) as billno FROM tbl_billing WHERE billno = '$opt' OR phno = '$opt' OR patientname = '$opt'");
-      $row = mysqli_fetch_assoc($result);
-
-      // Split the string into an array
-      $array = explode(",", $row['billno']);
-
-      // Add single quotes around each element
-      $quotedArray = array_map(function($item) {
-      return "'" . $item . "'";
-      }, $array);
-
-      // Join the array back into a string
-      $output = implode(",", $quotedArray);
-
-      // Output the result
-      $bill_no =  $output;
-
-      mysqli_query($db, "UPDATE tbl_billing_items SET status = 8 WHERE billno IN(".$bill_no.") AND status = 1 AND del_status != 1");
-
-      $sql = "SELECT * FROM tbl_billing WHERE billno IN(".$bill_no.") AND status = 8 AND del_status != 1";
-}      
-  else {
-      $sql = "SELECT * FROM tbl_billing WHERE status = 8 AND del_status != 1";
-  }
+      $bill_no=$_REQUEST['billno'];
+      mysqli_query($db,"UPDATE tbl_billing set status = 8 WHERE billno = '".$_REQUEST['billno']."' AND status = 1 and del_status != 1");
+      mysqli_query($db,"UPDATE tbl_billing_items set status = 8 WHERE billno = '".$_REQUEST['billno']."' AND status = 1 and del_status != 1");
+      $sql = "SELECT * FROM tbl_billing WHERE billno = '".$_REQUEST['billno']."' AND status = 8 and del_status != 1";
+    } else {
+      $sql = "SELECT * FROM tbl_billing WHERE status = 8 and del_status != 1";
+   }
   
   $res = mysqli_query($db, $sql);
   
@@ -58,6 +38,8 @@
       $flag2 = 'disabled';
       $pm = $r['paymentmode'];
       $flag22 = '';
+      $flag22 = 'disabled';
+      $flag23 = '';
       
       if ($pm == 'Cash') {
           $cash = 'selected';
@@ -90,6 +72,7 @@
       $pm = '';
       $paidamt = 0;
       $billingid = '';
+      $flag23 = 'disabled';
   }
 
 ?>
@@ -158,6 +141,42 @@
 					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
 				</script>
   </div>
+
+<div class="modal fade" role="dialog" tabindex="-1" id="modalviewBillList">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header no-padding">
+        <div class="table-header" align="center" >Billing Information </div>
+      </div>
+      <div class="modal-body no-padding" style="  max-height: 450px; min-height: 400px; overflow-y: auto;">
+        <div class="col-xs-12"> <br />
+          <table id="billingtbl-list" class="table table-striped">
+            <thead>
+              <tr>
+                <th style="text-align:center">S.No</th>
+                <th style="text-align:center">Bill No</th>
+                <th style="text-align:center">Patient Name</th>
+                <th style="text-align:center">Phone No</th>
+                <th style="text-align:center">Doctor Name</th>
+                <th style="text-align:center">Amount</th>
+                <th style="text-align:center">Balance Amount</th>
+                <th style="text-align:center">Action</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody style="text-align:center;">
+            </tbody>
+            <tfoot>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
   <div class="main-content">
     <div class="main-content-inner">
       <div class="page-content">
@@ -175,9 +194,9 @@
                   <div class="col-xs-3">
                     <input type="text" class="form-control input-sm " name="billno1" id="billno1" value="<?php echo $_REQUEST['billno']; ?>" placeholder="Bill No"  />
                     
-                    <input type="hidden" class="form-control input-sm " name="billno" id="billno" value="<?php echo $bill_no; ?>" placeholder="Bill No"  />
+                    <input type="hidden" class="form-control input-sm " name="billno" id="billno" value="<?php echo $_REQUEST['billno']; ?>" placeholder="Bill No"  />
                   </div>
-                  <input type="button" class="btn btn-info btn-sm col-xs-1" value="Get Bill" onClick="getBill()"  />
+                  <input type="button" class="btn btn-info btn-sm col-xs-1" value="Get Bill" onClick="getBillData()"  />
 </div>
 <!-- onClick="getBill()" -->
 
@@ -193,14 +212,14 @@ $interval = $now->diff($billDate);
 $daysDifference = $interval->days;
 
 // Check if the bill number is set
-if (isset($bill_no) && $bill_no != '""') {
+if (isset($bill_no)) {
     // Output JavaScript for confirmation dialog
-    if ($daysDifference > 14) {
-        echo '<h5 style="color: red;">Cannot Return Bill (Exceeded 14 days) Bill Date: ' . $date_only . '</h5>';
+    if ($daysDifference > 90) {
+        echo '<h5 style="color: red;">Cannot Return Bill (Exceeded 90 days) Bill Date: ' . $date_only . '</h5>';
         echo '<button onclick="customAlert()">Continue</button>';
                echo '<script>
                function customAlert() {
-                   var confirmation = confirm("The bill date is more than 14 days old. Do you want to continue?");
+                   var confirmation = confirm("The bill date is more than 90 days old. Do you want to continue?");
                    if (confirmation) {
                        window.location.href = "sales-return.php";
                    } else {
@@ -237,10 +256,11 @@ if (isset($bill_no) && $bill_no != '""') {
                     <tbody>
                 <?php
               require_once("config.php");
-              $sql = mysqli_query($db,"SELECT * FROM tbl_billing_items WHERE status = 8 AND billno IN(".$bill_no.") and del_status != 1");
+              $sql = mysqli_query($db,"SELECT * FROM tbl_billing_items WHERE status = 8 AND billno ='$bill_no' and del_status != 1");
               $i = 0;
               $tot_amt = 0;
-              $deducted_amt=0; 
+              $deducted_amt = 0; 
+              // $r = mysqli_fetch_array($sql);
               while($r = mysqli_fetch_array($sql)) {
                   $itemId= $r['id'];
                   $date = $r['datentime'];
@@ -264,7 +284,7 @@ if (isset($bill_no) && $bill_no != '""') {
                   $expiry = substr($expirydate,3);
                   $q = mysqli_query($db, "SELECT * FROM tbl_productlist WHERE id = $code");
                   $rq = mysqli_fetch_array($q);
-        
+     
                   echo '<tr>
                   <td><input type="checkbox" class="checkbox" style="text-align:center;"id=checkind_'.$i++.'></td>
                   <td style="text-align:center" class="item_id">'.$itemId.'</td>
@@ -280,7 +300,8 @@ if (isset($bill_no) && $bill_no != '""') {
                   <td style="text-align:center">'.$expiry.'</td>
                   <td style="text-align:center" class="per-price-span">' . $perprice . '</td>
                   <td style="text-align:center" class="amount-span">'.$totalprice.'</td>
-                  <td style="text-align:center"><img src="images/delete.png" style="height:24px; cursor:pointer;" onClick="javascript:deleteItem(this,\''.$r['id'].'\')"></td>
+                  <td style="text-align:center"><img src="images/delete.png" style="height:24px; cursor:pointer;" onClick="javascript:deleteItem(this,\''.$r['id'].'\')">
+                      <span class="t_returnqty" style="display:none"  id="t_returnqty'.$i.'">'.$returnQty.'</span></td>
               </tr>'; 
       }   
                 ?>
@@ -303,7 +324,12 @@ if (isset($bill_no) && $bill_no != '""') {
                     <option <?php echo $Credit_Claim; ?>>Credit-Claim</option>
                     </select>
                   </div>
-                  <button type="button" class="btn btn-primary btn-sm pull-right" onClick="summary('<?php echo $bill_no; ?>')" <?php echo $flag22; ?>>Summary</button>
+
+                  <button type="button" class="btn btn-primary btn-sm pull-right save" onClick="closeBillsalre('1')" <?php echo $flag22; ?>>Save & Print</button>
+                  <button type="button" style="margin-right:10px;" class="btn btn-primary btn-sm pull-right" onClick="editcloseBillsalre('2')" <?php echo $flag23; ?>>Edit</button>
+                  <button type="button" style="margin-right:10px;" class="btn btn-primary btn-sm pull-right save" onClick="closeBillsalre('0')" <?php echo $flag22; ?>>Save</button>
+                  
+                  <!-- <button type="button" class="btn btn-primary btn-sm pull-right" onClick="summary('<?php echo $bill_no; ?>')" <?php echo $flag22; ?>>Summary</button> -->
 
 
                 </div>
@@ -365,9 +391,17 @@ $(".return-qty-span").blur(function(){
     var qtySpan = row.find(".qty-span");
     var originalQty = parseInt(qtySpan.text());
     var returnQty = parseInt(row.find(".return-qty-span").text().trim());
+    
+    var t_returnqty = parseInt(row.find(".t_returnqty").text().trim());
+    var aa = t_returnqty;
 
-      
-    var newQty = originalQty - returnQty;
+    if(aa < returnQty){
+      var newQty = originalQty - returnQty;
+    } else {
+      var n_qty = aa - returnQty;
+      var newQty = originalQty + n_qty;
+    } 
+
     if (!isNaN(returnQty) && newQty >= 0) {
         newQty = Math.max(0, newQty);
         qtySpan.text(newQty);
@@ -396,8 +430,9 @@ $(".return-qty-span").blur(function(){
                 batchno :batchno,
                 id : item_id
             },
-            success: function(response) {alert(response);
-                alert('Item updated successfully.');
+            success: function(response) {
+                parseInt(row.find(".t_returnqty").text(returnQty).trim());
+                // alert('Item updated successfully.');
             },
             error: function(xhr, status, error) {
                 alert('Error updating item: ' + error);
@@ -405,6 +440,7 @@ $(".return-qty-span").blur(function(){
         });
     } else {
        alert('Invalid return quantity.');
+       parseInt(row.find(".return-qty-span").text(aa).trim());
     }
 });
 

@@ -111,7 +111,8 @@ function createNewIPBill(x){
 			if(msg[0] !="")
 			alert(msg);
 			else
-			window.location.href = 'billingip.php?id='+msg[1]+'&type=2';
+			// window.location.href = 'billingip.php?id='+msg[1]+'&type=2';
+			window.location.href = 'billing.php?id='+msg[1]+'&type=2';
 			//addBillingItemsip(x);
 		}
    });

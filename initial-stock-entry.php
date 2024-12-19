@@ -178,7 +178,21 @@
 					$sql = "SELECT * FROM tbl_productlist WHERE id = '$id'";
 					$res = mysqli_query($db,$sql);
 					$rs = mysqli_fetch_array($res);
-					echo "<tr><td>".$r['productid']."</td><td>".$rs['productname']."</td><td>".$r['qty']."</td><td>".$r['batchno']."</td><td>".$r['expirydate']."</td><td>".$r['pprice']."</td><td>".$r['mrp']."</td><td>".$r['tax_percentage']."</td><td>".$r['tax_amount']."</td><td><img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='editItemini(".$r['id'].")' />&nbsp;<img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItem(this,".$r['id'].")' /></td></tr>";
+					echo "<tr>
+          <td>".$r['productid']."</td>
+          <td id='t_peproductname".$r['id']."'>".$rs['productname']."</td>
+          <td id='t_peqty".$r['id']."' class='nonedu editable".$r['id']."'>".$r['qty']."</td>
+          <td id='t_pebatch".$r['id']."'>".$r['batchno']."</td>
+          <td>".$r['expirydate']."</td>
+          <td id='t_pepprice".$r['id']."'  class='nonedu editable".$r['id']."' onblur='validatevattbl(".$r['id'].")'>".$r['pprice']."</td>
+          <td id='t_pemrp".$r['id']."' class='nonedu editable".$r['id']."'>".$r['mrp']."</td>
+          <td id='pevatp".$r['id']."' class='nonedu editable".$r['id']."' onblur='validatevattbl(".$r['id'].")'>".$r['tax_percentage']."</td>
+          <td id='pevat".$r['id']."'>".$r['tax_amount']."</td>
+          <td style='display:flex'>
+          <img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='editItemini(".$r['id'].")' />&nbsp;
+          <img id='updt".$r['id']."' class='updt' src='images/save.png' style='width: 24px; cursor: pointer;display:none;' onClick='updatePurchaseItems(".$r['id'].")' />&nbsp;
+          <img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItems(this,".$r['id'].")' /></td>
+          </tr>";
 				}
 			?>
             </tbody>
@@ -282,6 +296,18 @@ function validatevat(){
   $('#pevat').val(truncator(z, 2));
   
 }
+
+function validatevattbl(id){
+  var x = $('#t_pepprice'+id).text();
+  if(x == ''){ $('#t_pepprice'+id).focus(); return false; }
+  var y = $('#pevatp'+id).text();
+  if(y == ''){ $('#pevatp'+id).focus(); return false; }
+  var z;
+  z= x *(y/100);
+  $('#pevat'+id).text(truncator(z, 2));
+  
+}
+
 function validatevatprice(){
   var x = $('#pepprice').val();
   if(x == ''){ $('#pepprice').focus(); return false; }

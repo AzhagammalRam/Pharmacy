@@ -4,16 +4,20 @@
 	$peinvoiceno = 0;
 	$pepurchaseno = 0;
 	$peproductname = $_REQUEST['peproductname'];
-	$peqty = $_REQUEST['peqty'];
+	$peqty = intval($_REQUEST['peqty']);
 	$pefree = 0;
 	$pebatch = $_REQUEST['pebatch'];
 	$storid=$_SESSION['storeid'];
-	$peexpiry = $_REQUEST['peexpiry'];
-	$peexpiry1 = $peexpiry;
-	$peexpiry = "27/" . $peexpiry;
-	$peexpiry = implode("-",array_reverse(explode("/",$peexpiry)));
+	if(isset($_REQUEST['peexpiry'])){
+		$peexpiry = $_REQUEST['peexpiry'];
+		$peexpiry1 = $peexpiry;
+		$peexpiry = "27/" . $peexpiry;
+		$peexpiry = implode("-",array_reverse(explode("/",$peexpiry)));
+	}
 	 
-	$taxtype = $_REQUEST['taxtype'];
+	if(isset($_REQUEST['taxtype'])){
+		$taxtype = $_REQUEST['taxtype'];
+	}
 	$tax_percentage = $_REQUEST['pevatp'];
 	$pepprice = $_REQUEST['pepprice'];
 	$pemrp = $_REQUEST['pemrp'];
@@ -50,7 +54,7 @@
 		$qt_y = $row['qty'];
 		$qt_y = $qt_y + $peqty;
 		if($flag == 'edit'){
-			$cmd = "UPDATE tbl_purchaseitems SET qty='$peqty', aval='$avail',invoiceno='$invoivenum',expirydate='$peexpiry',pprice = '$pepprice',mrp= '$pemrp', tax_type = '$taxtype', tax_amount= '$vat', tax_percentage = '$tax_percentage', grossamt = '$gross', netamt = '$netamt'  WHERE  purchaseid='$pid' AND batchno='$pebatch' AND productid='$productid' ";
+			$cmd = "UPDATE tbl_purchaseitems SET qty='$peqty', aval='$avail',invoiceno='$invoivenum',pprice = '$pepprice',mrp= '$pemrp', tax_amount= '$vat', tax_percentage = '$tax_percentage', grossamt = '$gross', netamt = '$netamt'  WHERE  purchaseid='$pid' AND batchno='$pebatch' AND productid='$productid' ";
 		}
 		else if($mrp == $pemrp)
 		{
@@ -69,7 +73,14 @@
 
 	if(mysqli_query($db,$cmd)){
 //		mysqli_query($db,"UPDATE tbl_productlist mrp = $pemrp SET id = $productid");
-		$array = array("id"=>$id, "code"=>$productid, "descrip"=>$peproductname, "qty"=>$peqty, "batch"=>$pebatch, "expiry"=>$peexpiry1, "mrp"=>$pemrp, "net"=>$netamt,"taxp"=> $tax_percentage,"tax_amount"=> $vat,"pepprice"=> $pepprice);
+		// $array = array("id"=>$id, "code"=>$productid, "descrip"=>$peproductname, "qty"=>$peqty, "batch"=>$pebatch, "expiry"=>$peexpiry1, "mrp"=>$pemrp, "net"=>$netamt,"taxp"=> $tax_percentage,"tax_amount"=> $vat,"pepprice"=> $pepprice);
+
+		$res1 = mysqli_query($db,"SELECT a.*,b.productname, a.productid as code FROM tbl_purchaseitems a
+									LEFT JOIN tbl_productlist b on a.productid= b.id
+									WHERE a.status = 3");
+				$array = mysqli_fetch_all($res1,MYSQLI_ASSOC);
+
+
 		echo json_encode($array);
 	}else
 		echo mysqli_error($db);

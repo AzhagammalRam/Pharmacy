@@ -71,14 +71,45 @@ return false;}
 			$('#peexpiry').val(''); 	 $('#pemrp').val(''); 	$('#pepprice').val('');
 			$('#pevatp').val('');		 $('#pevat').val('');
 			var x = JSON.parse(msg);
-			var tr = "<tr><td>"+x.code+"</td><td>"+x.descrip+"</td><td>"+x.qty+"</td><td>"+x.batch+"</td><td>"+x.expiry+"</td><td>"+x.pepprice+"</td><td>"+x.mrp+"</td><td>"+x.taxp+"</td><td>"+x.tax_amount+"</td><td><img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='javascript:editItemini("+x.id+")' /><img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItem(this,"+x.id+")' /></td></tr>";
-			$('#tbl-purchase-entry > tbody').append(tr);
+			// var tr = "<tr><td>"+x.code+"</td><td>"+x.descrip+"</td><td>"+x.qty+"</td><td>"+x.batch+"</td><td>"+x.expiry+"</td><td>"+x.pepprice+"</td><td>"+x.mrp+"</td><td>"+x.taxp+"</td><td>"+x.tax_amount+"</td><td><img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='javascript:editItemini("+x.id+")' /><img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItems(this,"+x.id+")' /></td></tr>";
+			// $('#tbl-purchase-entry > tbody').append(tr);
+			$('#tbl-purchase-entry > tbody').html('');
+			for(var i=0; i < x.length; i++){
+				var tr = "<tr><td>"+x[i].code+"</td><td id='t_peproductname"+x[i].id+"'>"+x[i].productname+"</td><td id='t_peqty"+x[i].id+"' class='nonedu editable"+x[i].id+"'>"+x[i].qty+"</td><td id='t_pebatch"+x[i].id+"'>"+x[i].batchno+"</td><td>"+x[i].expirydate+"</td><td id='t_pepprice"+x[i].id+"' class='nonedu editable"+x[i].id+"' onblur='validatevattbl("+x[i].id+")'>"+x[i].pprice+"</td><td id='t_pemrp"+x[i].id+"' class='nonedu editable"+x[i].id+"'>"+x[i].mrp+"</td><td id='pevatp"+x[i].id+"' class='nonedu editable"+x[i].id+"' onblur='validatevattbl("+x[i].id+")'>"+x[i].tax_percentage+"</td><td id='pevat"+x[i].id+"'>"+x[i].tax_amount+"</td><td style='display:flex'><img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='editItemini("+x[i].id+")' />&nbsp;<img id='updt"+x[i].id+"' class='updt' src='images/save.png' style='width: 24px; cursor: pointer;display:none;' onClick='updatePurchaseItems("+x[i].id+")' />&nbsp;<img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItems(this,"+x[i].id+")' /></td></tr>";
+				$('#tbl-purchase-entry > tbody').append(tr);
+			}
 			$('#flag').val("");
         }
     });
 }
 
-function deleteItem(img, x){
+function updatePurchaseItems(id){
+	// $('#tbl-purchase-entry > tbody').html('');
+	var peproductname = $('#t_peproductname'+id).text();
+	let  peqty = parseInt($('#t_peqty'+id).text());
+	var pebatch = $('#t_pebatch'+id).text();
+	var pepprice = $('#t_pepprice'+id).text();
+	var pemrp = $('#t_pemrp'+id).text();
+	var pevatp = $('#pevatp'+id).text();
+	var pevat = $('#pevat'+id).text();
+
+	$.ajax({
+        type: 'post',
+        url: 'manage-stock/new-ise.php',
+		data: { peproductname:peproductname,  peqty:peqty, pebatch:pebatch, pepprice:pepprice, pemrp:pemrp, pevatp:pevatp, pevat:pevat, flag:'edit' },
+        success: function(msg) {
+			var x = JSON.parse(msg);
+			$('#tbl-purchase-entry > tbody').html('');
+			for(var i = 0;  i < x.length ; i++){
+			 var tr = "<tr><td>"+x[i].code+"</td><td id='t_peproductname"+x[i].id+"'>"+x[i].productname+"</td><td id='t_peqty"+x[i].id+"' class='nonedu editable"+x[i].id+"'>"+x[i].qty+"</td><td id='t_pebatch"+x[i].id+"'>"+x[i].batchno+"</td><td>"+x[i].expirydate+"</td><td id='t_pepprice"+x[i].id+"' class='nonedu editable"+x[i].id+"' onblur='validatevattbl("+x[i].id+")'>"+x[i].pprice+"</td><td id='t_pemrp"+x[i].id+"' class='nonedu editable"+x[i].id+"'>"+x[i].mrp+"</td><td id='pevatp"+x[i].id+"' class='nonedu editable"+x[i].id+"' onblur='validatevattbl("+x[i].id+")'>"+x[i].tax_percentage+"</td><td id='pevat"+x[i].id+"'>"+x[i].tax_amount+"</td><td style='display:flex'><img src='images/edit.png' style='width: 24px; cursor: pointer;' onClick='editItemini("+x[i].id+")' />&nbsp;<img id='updt"+x[i].id+"' class='updt' src='images/save.png' style='width: 24px; cursor: pointer;display:none;' onClick='updatePurchaseItems("+x[i].id+")' />&nbsp;<img src='images/delete.png' style='width: 24px; cursor: pointer;' onClick='javascript:deleteItems(this,"+x[i].id+")' /></td></tr>";
+			 $('#tbl-purchase-entry > tbody').append(tr);
+			}
+			$('#flag').val("");
+        }
+    });
+}
+
+function deleteItems(img, x){
 	var row = img.closest("tr"); 
 	if(confirm("Are you sure to delete?")){
 		$.ajax({
@@ -96,20 +127,19 @@ function deleteItem(img, x){
 
 
 function editItemini(id){
+	$('.nonedu').attr("style", "background:none;");
+	$('.nonedu').attr('contenteditable', false);
+	$('.updt').attr("style", "width: 24px; cursor: pointer;display:none;");
 	$.ajax({
 		type: 'post',
 		url: 'manage-stock/get-ise.php?id='+id,
 		success: function(msg) {
 			var x = JSON.parse(msg);
 			if(x != ''){
-				$('#peproductname').val(x.productname); $('#peqty').val(x.qty); 	$('#pebatch').val(x.batchno);
-				$('#peexpiry').val(x.expirydate); 	 $('#pemrp').val(x.mrp); 	$('#pepprice').val(x.pprice);
-				$('#pevatp').val(x.tax_percentage);		 $('#pevat').val(x.tax_amount);
-				$('#taxtype').val(x.tax_type);
-				
 				$('#flag').val("edit");
-				document.getElementById("peproductname").readOnly = true;
-				document.getElementById("pebatch").readOnly = true;
+				$('.editable'+id).attr('contenteditable', true);
+				$('.editable'+id).attr("style", "background: bisque;");
+				$('#updt'+id).attr("style", "width: 24px; cursor: pointer;display:block;");
 			} else
 				alert(x.error);
 		}

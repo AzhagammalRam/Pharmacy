@@ -126,14 +126,14 @@
             <div class="form-group">
               <label class="col-xs-3 control-label">Date of Birth</label>
               <div class="col-xs-8">
-              <input type="text" class="form-control input-sm" tabindex="2" name="ipdob" id="ipdob" <?php echo $readonly; ?> placeholder="DD-MM-YYYY" onblur="calculateAge(this.value)">
+              <input type="text" class="form-control input-sm" tabindex="123" name="ipdob" id="ipdob" <?php echo $readonly; ?> placeholder="DD-MM-YYYY" onblur="calculateAge(this.value)">
               </div>
             </div>
 
             <div class="form-group">
               <label class="col-xs-3 control-label">Age</label>
               <div class="col-xs-8">
-                <input type="text" class="form-control input-sm mand" tabindex="122" name="ipage" id="ipage" placeholder="Age">
+                <input type="text" class="form-control input-sm mand" tabindex="124" name="ipage" id="ipage" placeholder="Age">
               </div>
             </div>
 		
@@ -143,7 +143,7 @@
 			?>
               <label class="col-xs-3 control-label">Doctor Name</label>
               <div class="col-xs-8">
-			  <select id='ipdrname' name="ipdrname" tabindex="123" onChange="checkdoctor1($(this))"> 
+			  <select id='ipdrname' name="ipdrname" tabindex="125" onChange="checkdoctor1($(this))"> 
 			  <option value="0">Select</option>
 			<?php  while($q=mysqli_fetch_array($query)) { 
 			echo '
@@ -164,12 +164,12 @@
 			</div>
 			</div>
 			 </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
               <label class="col-xs-3 control-label">Payment Mode</label>
               <div class="col-xs-8">
                 <input type="text" class="form-control input-sm mand" tabindex="124" name="ippaymode" id="ippaymode" placeholder="Payment Mode">
               </div>
-            </div>
+            </div> -->
           </form>
 		 <script>
 		 function checkdoctor1(x) {
@@ -238,24 +238,41 @@
 	});
 
 
-  function calculateAge(dob) {
-    // Change Date Format
-    const changeDate = dob.split("-");
-    const result = changeDate[2]+"-"+changeDate[1]+"-"+changeDate[0];
+function calculateAge(dob)
+{
+    var birthdate = dob;
+    var today = new Date();
+    var x = birthdate.split("-"); 
+    var bdays = x[0];
+    var bmonths = x[1];
+    var byear = x[2];
+    
+    var sdays = String(today.getDate()).padStart(2, '0');
+    var smonths = String(today.getMonth() + 1).padStart(2, '0');
+    var syear = today.getFullYear();
 
-    // Parse the date of birth
-    const birthDate = new Date(result);
-    const today = new Date();
-
-    // Calculate age
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    // Adjust if the current date is before the birth date this year
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+    if(sdays < bdays)
+    {
+        sdays = parseInt(sdays) + 30;
+        smonths = parseInt(smonths) - 1;
+        var fdays = sdays - bdays;
     }
-    $("#ipage").val(age);
-    return age;
+    else{
+        var fdays = sdays - bdays;
+    }
+    
+    if(smonths < bmonths)
+    {
+        smonths = parseInt(smonths) + 12;
+        syear = syear - 1;
+        var fmonths = smonths - bmonths;
+    }
+    else
+    { 
+        var fmonths = smonths - bmonths;
+    }
+
+    var fyear = syear - byear;
+    document.getElementById('ipage').value = fyear+' years '+fmonths+' months ';
 }
 </script>

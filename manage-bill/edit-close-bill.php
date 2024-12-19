@@ -24,7 +24,7 @@
 	$dispers=$rsr['disper'];
 	$count = 0;
 	foreach($assets as $asset => $key){
-		$qty = $key[4];
+		$qty = $key[5];
 	$perprice=$amount/$qty;
 	$totalprice=$perprice*$returnqty;
 	if ($key[0]==1)  
@@ -65,29 +65,29 @@
 foreach($assets as $asset => $key){
 	$perprice=$amount/$qty;
 	$totalprice=$perprice*$returnqty;
-	if ($key[0]==1 && $key[2]==$code && $key[5]==$batch)  
+	if ($key[0]==1 && $key[3]==$code && $key[7]==$batch)  
 	{
 		$perprice=$pamount/$quantity;
-	$totalprice=$perprice*$key[4];
-	if(!(($key[4]+$ret_qty)>$quantity))
+	$totalprice=$perprice*$key[6];
+	if(!(($key[5]+$ret_qty)>$quantity))
 	{
-		$cmd = "INSERT INTO tbl_sales_return_billing_items (`billno`, `bid`,`code`,`batchno`,`qty`,`returnqty`,`amount`,`taxamount`,`tax_type`,`tax_percentage`,`expirydate`, `purchaseid`, `datentime`, `status`, `username`) VALUES ( '$billno', '$ids', '$code', '$batch', '$quantity','$key[4]', '$totalprice', '$tax_amount','$tax_type', '$tax_percentage', '$expirydate', '$purchaseid',CURRENT_TIMESTAMP, '1', '$username')";
+		$cmd = "INSERT INTO tbl_sales_return_billing_items (`billno`, `bid`,`code`,`batchno`,`qty`,`returnqty`,`amount`,`taxamount`,`tax_type`,`tax_percentage`,`expirydate`, `purchaseid`, `datentime`, `status`, `username`) VALUES ( '$billno', '$ids', '$code', '$batch', '$quantity','$key[5]', '$totalprice', '$tax_amount','$tax_type', '$tax_percentage', '$expirydate', '$purchaseid',CURRENT_TIMESTAMP, '1', '$username')";
 		$cmd1 = mysqli_query($db,$cmd);
 		 
 		}
 
-	if(!(($key[4]+$ret_qty)>$quantity))
+	if(!(($key[5]+$ret_qty)>$quantity))
 	{
-		mysqli_query($db,"UPDATE `tbl_purchaseitems` SET `aval` =aval+$key[4] WHERE `productid` = '$code' AND `batchno`='$batch'AND `expirydate`='$expirydate' AND `id`='$pur_ref_id'");
+		mysqli_query($db,"UPDATE `tbl_purchaseitems` SET `aval` =aval+$key[5] WHERE `productid` = '$code' AND `batchno`='$batch'AND `expirydate`='$expirydate' AND `id`='$pur_ref_id'");
 	}
 
-	if(($key[4]+$ret_qty)==$quantity)
+	if(($key[5]+$ret_qty)==$quantity)
 	{
-		mysqli_query($db,"UPDATE tbl_billing_items SET `status` = 0, `returnqty`=($key[4]+$ret_qty) WHERE status = 8 AND billno = '$billno' and `code`='$code' AND `expirydate`='$expirydate' and del_status != 1");
+		mysqli_query($db,"UPDATE tbl_billing_items SET `status` = 0, `returnqty`=($key[5]+$ret_qty) WHERE status = 8 AND billno = '$billno' and `code`='$code' AND `expirydate`='$expirydate' and del_status != 1");
 	}
-	elseif(($key[4]+$ret_qty) < $quantity)
+	elseif(($key[5]+$ret_qty) < $quantity)
 	{
-		mysqli_query($db,"UPDATE tbl_billing_items SET `returnqty`=($key[4]+$ret_qty) WHERE status = 8 AND billno = '$billno' and `code`='$code' AND `expirydate`='$expirydate' and del_status != 1");
+		mysqli_query($db,"UPDATE tbl_billing_items SET `returnqty`=($key[5]+$ret_qty) WHERE status = 8 AND billno = '$billno' and `code`='$code' AND `expirydate`='$expirydate' and del_status != 1");
 	}
 
 	}

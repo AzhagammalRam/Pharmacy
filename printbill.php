@@ -186,7 +186,6 @@ $sql = mysqli_query($db,"SELECT * FROM tbl_billing_items WHERE billno = '$billno
 else if ($type==2) {
 $sql = mysqli_query($db,"SELECT * FROM tbl_sales_return_billing_items WHERE billno = '$billno' AND status =1 AND bid = '$sale_ret_id'");
 }
-
 while($r = mysqli_fetch_array($sql)){
 
 $code = $r['code'];

@@ -109,6 +109,16 @@ function addBillingItemssalre(){
 		}
 	});
 }
+function editcloseBillsalre(x){
+	var tbody = $("#tbl-list tbody");
+		if (tbody.children().length == 0) {
+			alert('Table should not blank');
+			return false;
+		}
+	if(x == '2'){
+		$('.save').removeAttr('disabled');
+	}
+}
 
 function closeBillsalre(p){
 	var pm = $('#paymentmode').val();
@@ -140,7 +150,7 @@ function closeBillsalre(p){
         asset.push(cols);
         
     });
-  
+	
 	$.ajax({
 		type: 'post',
 		url: 'manage-bill/edit-close-bill.php',
@@ -149,7 +159,7 @@ function closeBillsalre(p){
 			billno: $('#billno').val(),
 			discount:null,
 		},
-		success: function(msg) {
+		success: function(msg) {console.log(msg);
 			
 			if(msg=='1')
 			{
@@ -174,8 +184,37 @@ function closeBillsalre(p){
 	});
 }
 
-function getBill(){
-	var billno = $.trim($('#billno1').val());// It may be Bill NO / Ph.NO / Name
+function getBillData(){
+	var billno = $.trim($('#billno1').val());
+	$.ajax({
+		type: 'post',
+		url: 'manage-bill/getBillData.php',
+		data: {
+			opt: billno,
+		},
+		success: function(msg) {
+			
+			if(msg != 'error')
+			{
+				var t1 = JSON.parse(msg);
+				var t = t1.res_arr;
+
+				for(var i=0;i<t.length;i++){
+					var tr = "<tr><td>"+(i+1)+"</td><td>"+t[i].billno+"</td><td>"+t[i].patientname+"</td><td>"+t[i].phno+"</td><td>"+t[i].drname+"</td><td>"+t[i].totalamt+"</td><td>"+t[i].balanceamt+"</td><td><img src='images/edit.png' style='height:24px; cursor:pointer;' onClick='javascript:getBill("+t[i].billno+")'></td></tr>";
+					$('#billingtbl-list > tbody').append(tr);
+				}
+				
+				$('#modalviewBillList').modal('toggle');
+				// alert(msg);
+			} else {
+				alert("ERROR : "+msg);
+        }
+		}
+	});
+}
+
+function getBill(billno){
+	// var billno = $.trim($('#billno').val());
 	if(billno == '') return false;
 	window.location.href = 'sales-return.php?billno='+billno;
 }
